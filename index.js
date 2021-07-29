@@ -1,15 +1,40 @@
 const express = require('express')
 const app = express()
 const port = 5000
+const bodyParser = require('body-parser');
+
+const config = require('./config/key');
+
+const { User } = require('./models/User');
+
+//application/x-www-form-urlencoded 로 된 데이터를 분석해서 가져올 수 있게 해주는 부분
+app.use(bodyParser.urlencoded({extended: true})); //bodyParser 클라이언트가 오는 정보를 서버에서 분석해서 가져올 수 있게 해주는 것
+
+//application/json으로 된 데이터를 분석해서 가져올 수 있게 해주는 부분
+app.use(bodyParser.json());
 
 const mongoose = require('mongoose')
-mongoose.connect('mongodb+srv://seoyeong:ksy-678411@cluster0.beecu.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
+mongoose.connect(config.mongoURI, {
   useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false
 }).then(() => console.log('MongoDB Connected...'))
   .catch(err => console.log(err))
 
 app.get('/', (req, res) => {
-  res.send('Hello World!~~안녕하세요 ~')
+  res.send('Hello World!~~안녕하세요 ~!!')
+})
+
+app.post('/register',(req, res) => {
+  //회원 가입 할때 필요한 정보들을 client에서 가져오면
+  //그것들을 데이터베이스에 넣어준다.
+
+    const user = new User(req.body);
+
+    user.save((err, userInfo) => {
+      if(err) return res.json({ success: false, err})
+      return res.status(200).json({
+        success: true
+      })
+    }) //정보들이 user 모델에 저장이 된것.
 })
 
 app.listen(port, () => {
